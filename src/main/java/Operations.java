@@ -1,3 +1,6 @@
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Operations {
@@ -35,19 +38,19 @@ public class Operations {
         final Account a = new Account(1000);
         final Account b = new Account(2000);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    transfer(a, b, 500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        ExecutorService service = Executors.newFixedThreadPool(3);
+        Random random = new Random();
+
+        for (int i = 0; i < 10; i++) {
+            service.submit(
+                    new Transfer(a, b, random.nextInt(400))
+            );
+        }
+
+        service.shutdown();
 
         try {
-            transfer(b, a, 300);
+            service.awaitTermination(1000, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
